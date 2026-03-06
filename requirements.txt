@@ -1,0 +1,10 @@
+# EvalCraft Dependencies
+
+# Core
+anthropic>=0.39.0         # Claude API client
+pandas>=2.0.0             # Data handling
+python-dotenv>=1.0.0      # Environment variables
+
+# Optional (for development)
+pytest>=7.0.0             # Testing
+black>=23.0.0             # Code formatting
