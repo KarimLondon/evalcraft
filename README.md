@@ -21,12 +21,12 @@ EvalCraft helps PMs design evaluation frameworks for AI agents by generating cus
 ## 🚀 Problem & Solution
 
 ### Problem
-Product Managers building AI products don't know how to write evaluations. They ship agents without measuring performance or knowing if they behave as expected.
+Product Managers may struggle to know where or how to write evaluations for their AI products. In the absense of any evals, some may even ship agents without measuring performance or knowing if they behave as expected.
 
 ### Solution
-EvalCraft automates eval creation by:
+EvalCraft support Product Managers in creating evals by:
 1. Analyzing your agent prompt + product outcomes
-2. Generating custom rubrics (4-6 categories with scoring scales)
+2. Working with you to create custom rubrics (4-6 categories with scoring scales)
 3. Creating executable Python code (LLM-as-judge)
 4. Running evaluations with interactive HTML reports
 5. Supporting iteration based on results
