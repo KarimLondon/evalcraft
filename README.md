@@ -39,6 +39,8 @@ EvalCraft support Product Managers in creating evals by:
 - **🤖 AI-Powered**: Claude generates custom eval categories and reference examples
 - **📊 LLM-as-Judge**: Automated scoring with temperature=0 for consistency
 - **🔍 Interactive Reports**: HTML dashboards with detailed traces and filtering
+- **📐 Confusion Matrix Metrics**: Add a `label` column to your dataset and get precision, recall, F1, and accuracy automatically — ideal for classification agents
+- **🧭 Classification Detection**: EvalCraft spots when your agent is a classifier and proactively suggests the right metrics, even before you have labels
 - **♻️ Iterative**: Refine rubrics based on results
 - **📦 Portable**: Standalone Python scripts you can customize and integrate
 
@@ -78,18 +80,23 @@ Output: Rubric + Python code + Interactive HTML report
 ### Option 1: Use as Claude Code Skill
 
 ```bash
-# Clone to Claude Code skills directory
-cp -r evalcraft ~/.claude/skills/
+# Clone the repo
+git clone https://github.com/KarimLondon/evalcraft.git
 
-# Restart Claude Code
-# Then invoke: /evalcraft
+# Copy the skill folder into Claude Code's skills directory
+cp -r evalcraft ~/.claude/skills/evalcraft
+
+# Restart Claude Code, then invoke:
+# /evalcraft
 ```
+
+> **Requires:** [Claude Code CLI](https://claude.ai/claude-code) — the skill is invoked directly inside a Claude Code session.
 
 ### Option 2: Use Scripts Directly
 
 ```bash
 # Clone repo
-git clone https://github.com/yourusername/evalcraft.git
+git clone https://github.com/KarimLondon/evalcraft.git
 cd evalcraft
 
 # Install dependencies
@@ -141,7 +148,12 @@ Each with 1-5 scales and concrete reference examples.
 ### 3. Run Evaluation
 
 ```bash
+# Basic run
 python evaluate.py --input test_cases.csv
+
+# With ground truth labels (unlocks confusion matrix metrics)
+# Add a 'label' column to your CSV with values: pass/fail, yes/no, 1/0, positive/negative
+python evaluate.py --input test_cases_labeled.csv
 ```
 
 ### 4. View Results
@@ -151,6 +163,9 @@ Interactive HTML report opens in browser:
 - Deflection: 3.8/5.0 ⚠️ (needs improvement)
 - Correctness: 4.2/5.0 ✅
 - Click any case to see judge reasoning
+
+If labeled data was provided, confusion matrix metrics appear automatically:
+- Precision: 81% | Recall: 75% | F1: 0.779 | Accuracy: 80%
 
 ---
 
@@ -214,6 +229,10 @@ def evaluate_response(query, response):
 ### ✅ RAG Systems
 - Measure: Retrieval accuracy, Grounding, Hallucination avoidance
 - Outcome: Factual, cited responses
+
+### ✅ Classification & Moderation Agents
+- Measure: Precision, Recall, F1 (via ground truth labels), plus LLM rubric scores
+- Outcome: Accurate triage, routing, spam/content filtering with measurable error rates
 
 ---
 
@@ -329,6 +348,7 @@ Contributions welcome! Please:
 - [x] Evaluation execution
 - [x] Interactive HTML reports
 - [x] Iteration support
+- [x] Classification task detection + confusion matrix metrics (precision, recall, F1, accuracy)
 
 ### Phase 2: Web UI 🚧 (Planned)
 - [ ] Visual rubric builder
@@ -396,7 +416,7 @@ Building AI products and tooling for PMs.
 If EvalCraft helps you build better AI products:
 - Star this repo ⭐
 - Share with other PMs
-- [Open an issue](https://github.com/yourusername/evalcraft/issues) with feedback
+- [Open an issue](https://github.com/KarimLondon/evalcraft/issues) with feedback
 
 ---
 
