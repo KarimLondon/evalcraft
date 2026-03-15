@@ -86,7 +86,7 @@ On GitHub repo page → Settings → Topics:
 2. Tag: `v1.0.0`
 3. Title: `EvalCraft v1.0.0 - Claude Skill MVP`
 4. Description:
-   ```
+```
    ## EvalCraft v1.0.0 - Phase 1 Complete
 
    First release of EvalCraft, an AI evaluation framework builder for PMs.
@@ -109,7 +109,7 @@ On GitHub repo page → Settings → Topics:
 
    ### Example
    See `examples/fitness_coach_complete/` for full working example.
-   ```
+```
 
 **Option B: Via GitHub CLI**
 ```bash
@@ -134,9 +134,9 @@ gh release create v1.0.0 \
 2. Take screenshot of HTML report
 3. Save to `docs/images/dashboard-screenshot.png`
 4. Update README to show image:
-   ```markdown
+```markdown
    ![Results Dashboard](docs/images/dashboard-screenshot.png)
-   ```
+```
 
 ### Add Demo GIF (Optional)
 1. Record terminal session with [asciinema](https://asciinema.org)
@@ -239,15 +239,15 @@ and product outcomes.
 
 After publishing:
 1. Share in relevant communities:
-   - r/LanguageTechnology
-   - r/MachineLearning (Sunday megathread)
-   - Anthropic Discord
-   - AI Twitter
-   - LinkedIn
+  - r/LanguageTechnology
+  - r/MachineLearning (Sunday megathread)
+  - Anthropic Discord
+  - AI Twitter
+  - LinkedIn
 
 2. Ask for feedback:
-   - "Would love feedback on my eval tool for PMs"
-   - Link to Issues for suggestions
+  - "Would love feedback on my eval tool for PMs"
+  - Link to Issues for suggestions
 
 3. Respond to issues/PRs promptly
 

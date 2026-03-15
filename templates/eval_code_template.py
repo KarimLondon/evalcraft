@@ -280,6 +280,18 @@ def parse_scores_from_text(text: str, rubric: Dict[str, Any]) -> Dict[str, Dict[
 # DATASET EVALUATION
 # ============================================================================
 
+def normalize_label(label) -> Optional[str]:
+    """Normalize ground truth label to 'pass' or 'fail'."""
+    if label is None or (isinstance(label, float) and pd.isna(label)):
+        return None
+    label_str = str(label).strip().lower()
+    if label_str in ('pass', 'positive', 'yes', '1', 'true', 'good', 'correct'):
+        return 'pass'
+    if label_str in ('fail', 'negative', 'no', '0', 'false', 'bad', 'incorrect', 'wrong'):
+        return 'fail'
+    return None  # Unrecognized label value
+
+
 def evaluate_dataset(
     dataset_path: str,
     output_dir: str,
@@ -316,7 +328,13 @@ def evaluate_dataset(
         print(f"❌ Error loading dataset: {e}")
         sys.exit(1)
 
-    print(f"✅ Loaded {len(df)} test cases\n")
+    has_labels = 'label' in df.columns
+    if has_labels:
+        label_counts = df['label'].value_counts().to_dict()
+        print(f"✅ Loaded {len(df)} test cases (ground truth labels detected: {label_counts})")
+        print(f"   Confusion matrix metrics (precision, recall, F1, accuracy) will be computed\n")
+    else:
+        print(f"✅ Loaded {len(df)} test cases\n")
 
     # Initialize client
     client = get_anthropic_client()
@@ -339,6 +357,7 @@ def evaluate_dataset(
             "test_case_id": idx,
             "query": row['query'],
             "response": row['response'],
+            "ground_truth": normalize_label(row['label']) if has_labels else None,
             "scores": eval_result['scores'],
             "judge_reasoning": eval_result['judge_reasoning'],
             "success": eval_result['success']
@@ -419,6 +438,28 @@ def aggregate_results(results: List[Dict[str, Any]], rubric: Dict[str, Any]) -> 
                 "pass_rate": pass_counts[category] / len(scores),
                 "pass_threshold": rubric[category]['pass_threshold']
             }
+
+    # Confusion matrix metrics (only when ground truth labels are present)
+    labeled = [r for r in results if r.get('ground_truth') is not None and r['success']]
+    if labeled:
+        tp = sum(1 for r in labeled if r['ground_truth'] == 'pass' and check_overall_pass(r['scores'], rubric))
+        fp = sum(1 for r in labeled if r['ground_truth'] == 'fail' and check_overall_pass(r['scores'], rubric))
+        tn = sum(1 for r in labeled if r['ground_truth'] == 'fail' and not check_overall_pass(r['scores'], rubric))
+        fn = sum(1 for r in labeled if r['ground_truth'] == 'pass' and not check_overall_pass(r['scores'], rubric))
+
+        precision = tp / (tp + fp) if (tp + fp) > 0 else 0.0
+        recall    = tp / (tp + fn) if (tp + fn) > 0 else 0.0
+        f1        = 2 * precision * recall / (precision + recall) if (precision + recall) > 0 else 0.0
+        accuracy  = (tp + tn) / len(labeled)
+
+        metrics["confusion_matrix"] = {
+            "tp": tp, "fp": fp, "tn": tn, "fn": fn,
+            "precision": round(precision, 4),
+            "recall":    round(recall, 4),
+            "f1":        round(f1, 4),
+            "accuracy":  round(accuracy, 4),
+            "labeled_cases": len(labeled),
+        }
 
     return metrics
 
@@ -613,6 +654,45 @@ def generate_html_report(
             </div>
 """
 
+    # Add confusion matrix card if ground truth labels were provided
+    if 'confusion_matrix' in metrics:
+        cm = metrics['confusion_matrix']
+        p_class = 'pass' if cm['precision'] >= 0.7 else 'fail'
+        r_class = 'pass' if cm['recall'] >= 0.7 else 'fail'
+        html += f"""
+            <div class="metric-card" style="border-top: 3px solid #6366f1; grid-column: span 2;">
+                <h3>Confusion Matrix Metrics <span style="font-weight:normal;color:#999;">({cm['labeled_cases']} labeled cases)</span></h3>
+                <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 12px;">
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:4px;">Precision</div>
+                        <div class="value {p_class}" style="font-size:24px;">{cm['precision']:.1%}</div>
+                        <div class="subtext">of predicted passes,<br>% truly positive</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:4px;">Recall</div>
+                        <div class="value {r_class}" style="font-size:24px;">{cm['recall']:.1%}</div>
+                        <div class="subtext">of true positives,<br>% correctly found</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:4px;">F1 Score</div>
+                        <div class="value" style="font-size:24px;">{cm['f1']:.3f}</div>
+                        <div class="subtext">harmonic mean of<br>precision &amp; recall</div>
+                    </div>
+                    <div>
+                        <div style="font-size:12px;color:#666;margin-bottom:4px;">Accuracy</div>
+                        <div class="value" style="font-size:24px;">{cm['accuracy']:.1%}</div>
+                        <div class="subtext">overall correct<br>classifications</div>
+                    </div>
+                </div>
+                <div style="font-family:monospace;background:#f3f4f6;padding:10px 14px;border-radius:6px;margin-top:14px;font-size:13px;line-height:1.8;">
+                    <strong>Matrix:</strong>&nbsp;&nbsp;
+                    TP (correct pass) = {cm['tp']} &nbsp;|&nbsp; FP (wrong pass) = {cm['fp']}<br>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                    FN (missed pass) = {cm['fn']} &nbsp;|&nbsp; TN (correct fail) = {cm['tn']}
+                </div>
+            </div>
+"""
+
     html += """
         </div>
 
@@ -750,6 +830,15 @@ def print_summary(metrics: Dict[str, Any]):
     for category, cat_metrics in metrics['categories'].items():
         status = "✅" if cat_metrics['pass_rate'] >= 0.7 else "⚠️"
         print(f"   {status} {category.title()}: {cat_metrics['mean']:.1f}/5.0 (pass rate: {cat_metrics['pass_rate']:.1%})")
+
+    if 'confusion_matrix' in metrics:
+        cm = metrics['confusion_matrix']
+        print(f"\n🎯 Confusion Matrix Metrics ({cm['labeled_cases']} labeled cases):")
+        print(f"   Accuracy:  {cm['accuracy']:.1%}")
+        print(f"   Precision: {cm['precision']:.1%}  (of predicted passes, % truly positive)")
+        print(f"   Recall:    {cm['recall']:.1%}  (of true positives, % correctly identified)")
+        print(f"   F1 Score:  {cm['f1']:.3f}")
+        print(f"   Matrix:    TP={cm['tp']} FP={cm['fp']} | FN={cm['fn']} TN={cm['tn']}")
 
     print(f"\n💡 Recommendations:")
     if metrics['overall_pass_rate'] >= 0.9:

@@ -66,35 +66,35 @@ Location: `~/.claude/plans/compiled-twirling-grove.md`
 ### Key Features to Implement
 
 1. **Home Page**
-   - Explain what EvalCraft does
-   - "Create Evaluation Framework" button
-   - Example use cases
+  - Explain what EvalCraft does
+  - "Create Evaluation Framework" button
+  - Example use cases
 
 2. **Wizard Flow** (mirrors skill)
-   - Step 1: Agent prompt input (textarea)
-   - Step 2: Product outcomes input (bullet list)
-   - Step 3: Upload labeled data (optional, drag-and-drop CSV)
-   - Step 4: Review generated rubric (editable)
-   - Step 5: Generate & download code OR run evaluation
+  - Step 1: Agent prompt input (textarea)
+  - Step 2: Product outcomes input (bullet list)
+  - Step 3: Upload labeled data (optional, drag-and-drop CSV)
+  - Step 4: Review generated rubric (editable)
+  - Step 5: Generate & download code OR run evaluation
 
 3. **Rubric Builder** (visual)
-   - Add/remove categories
-   - Edit descriptions, scales, thresholds
-   - Add reference examples
-   - Live preview
+  - Add/remove categories
+  - Edit descriptions, scales, thresholds
+  - Add reference examples
+  - Live preview
 
 4. **Evaluation Runner**
-   - Upload test dataset
-   - Run evaluation (progress bar)
-   - View results dashboard
-   - Download artifacts
+  - Upload test dataset
+  - Run evaluation (progress bar)
+  - View results dashboard
+  - Download artifacts
 
 5. **Results Dashboard**
-   - Overall pass rate (gauge chart)
-   - Per-category scores (bar chart)
-   - Test cases table (sortable, filterable)
-   - Click to view traces
-   - Export results
+  - Overall pass rate (gauge chart)
+  - Per-category scores (bar chart)
+  - Test cases table (sortable, filterable)
+  - Click to view traces
+  - Export results
 
 ### File Structure (Proposed)
 
@@ -152,10 +152,10 @@ evalcraft-web/
 2. Set up FastAPI backend
 3. Copy scripts from skill → `backend/services/`
 4. Create API routes:
-   - `POST /api/rubric/generate` (calls generate_rubric.py)
-   - `POST /api/code/generate` (calls generate_eval_code.py)
-   - `POST /api/eval/run` (executes evaluation)
-   - `GET /api/eval/{id}/results` (returns results)
+  - `POST /api/rubric/generate` (calls generate_rubric.py)
+  - `POST /api/code/generate` (calls generate_eval_code.py)
+  - `POST /api/eval/run` (executes evaluation)
+  - `GET /api/eval/{id}/results` (returns results)
 
 ### Week 2: Frontend Wizard
 1. Create Next.js/Streamlit app
@@ -192,20 +192,20 @@ evalcraft-web/
 ### From Phase 1 Testing:
 
 1. **Template syntax error** (FIXED manually, needs template update)
-   - Line 603: `metrics: Dict[str, Any]],` → `metrics: Dict[str, Any],`
-   - Fix in: `templates/eval_code_template.py`
+  - Line 603: `metrics: Dict[str, Any]],` → `metrics: Dict[str, Any],`
+  - Fix in: `templates/eval_code_template.py`
 
 2. **Empty results handling**
-   - If all evals fail (API error), `min()` crashes on empty sequence
-   - Fix in: `evaluate.py` line 841 (add check for empty categories)
+  - If all evals fail (API error), `min()` crashes on empty sequence
+  - Fix in: `evaluate.py` line 841 (add check for empty categories)
 
 3. **Progress indicators**
-   - Currently just prints dots
-   - UI can use proper progress bars
+  - Currently just prints dots
+  - UI can use proper progress bars
 
 4. **No synthetic test case generator**
-   - Currently manual CSV creation
-   - Could add `scripts/generate_test_cases.py`
+  - Currently manual CSV creation
+  - Could add `scripts/generate_test_cases.py`
 
 ---
 

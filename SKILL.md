@@ -44,6 +44,14 @@ First, I need to see your AI agent's prompt or system instructions.
 **I confirm:**
 "Got it! Your agent is a [summarize role/purpose based on prompt]."
 
+**Classification Task Detection (internal):**
+After summarizing the agent, I silently check whether this is a classification task by looking for these signals in the prompt:
+- Output belongs to a fixed set of labels (yes/no, pass/fail, spam/not-spam, intent categories, approved/rejected)
+- Agent triages, routes, filters, moderates, or categorizes inputs
+- Agent produces a verdict or decision rather than open-ended text
+
+I store this as an internal flag `is_classification_agent = True/False`, used later to recommend confusion matrix metrics at the right moment.
+
 ## Step 2: Get Product Outcomes
 
 This is critical - outcomes determine which evaluation dimensions matter most.
@@ -79,10 +87,26 @@ If no, I'll generate synthetic test cases for you."
 
 **If file provided:**
 - Use Read tool to validate format
-- Count examples (total, pass/fail split if labeled)
-- Confirm: "I found [N] test cases. I'll use these for evaluation."
+- Check if a `label` column exists (values like pass/fail, yes/no, 0/1, positive/negative, true/false)
+- Count examples (total, and label distribution if labeled)
+- **If ****`label`**** column found:**
+  - Normalize labels to pass/fail internally
+  - Confirm: "I found [N] test cases with ground truth labels ([X] pass, [Y] fail). Because you have labels, I'll compute **confusion matrix metrics** — precision, recall, F1, and accuracy — alongside the standard LLM judge scores."
+- **If no ****`label`**** column AND ****`is_classification_agent`****:**
+  - Say: "Your dataset doesn't have a ground truth `label` column. Since your agent is doing classification, adding labels would unlock confusion matrix metrics:
+    - **Precision** — when the agent says 'pass', how often is it actually correct?
+    - **Recall** — of all the true positives, how many does the agent correctly identify?
+    - **F1** — balanced measure combining precision and recall
+    - **Accuracy** — overall correct classification rate
+    Would you like to add a `label` column to your dataset? I can help annotate a sample, or generate labeled synthetic cases."
+- **If no ****`label`**** column AND not classification agent:**
+  - Confirm: "I found [N] test cases. I'll use these for evaluation."
 
-**If no data:**
+**If no data AND ****`is_classification_agent`****:**
+- Say: "No problem! Since your agent does **classification**, I'll generate labeled test cases — including a ground truth `label` column — so we can compute confusion matrix metrics (precision, recall, F1, accuracy). These are more informative than overall pass rate alone for classification tasks."
+- Generate test cases with a `label` column (values: pass/fail)
+
+**If no data AND not classification agent:**
 - Confirm: "No problem! I'll generate 10-15 synthetic test cases covering common scenarios, edge cases, and potential failure modes."
 
 ---
@@ -304,6 +328,13 @@ python3 evaluate.py --input test_dataset.csv
 - **Completeness:** X.X/5.0 [✅ or ⚠️]
 - **Tone:** X.X/5.0 [✅ or ⚠️]
 [... more categories ...]
+
+**[If ground truth labels were provided] Confusion Matrix Metrics:**
+- **Precision:** XX% — when the judge said 'pass', this % were truly positive
+- **Recall:** XX% — of all true positives, this % were correctly identified
+- **F1 Score:** X.XX — harmonic mean of precision and recall
+- **Accuracy:** XX%
+- **Matrix:** TP=[X] FP=[X] / FN=[X] TN=[X]
 
 **Flagged Cases:** [M] responses scored below threshold
 
