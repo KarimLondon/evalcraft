@@ -10,12 +10,6 @@ EvalCraft helps PMs design evaluation frameworks for AI agents by generating cus
 
 ---
 
-## 🎥 Demo
-
-**Example:** Fitness coach agent → Custom 6-category rubric → Evaluation code → Interactive HTML report
-
----
-
 ## 🚀 Problem & Solution
 
 ### Problem
