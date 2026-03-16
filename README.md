@@ -12,8 +12,6 @@ EvalCraft helps PMs design evaluation frameworks for AI agents by generating cus
 
 ## 🎥 Demo
 
-[Watch 2-minute demo video](https://youtu.be/your-demo-link) ← *Coming soon*
-
 **Example:** Fitness coach agent → Custom 6-category rubric → Evaluation code → Interactive HTML report
 
 ---
@@ -66,7 +64,6 @@ Output: Rubric + Python code + Interactive HTML report
 - Visual rubric builder
 - Real-time evaluation dashboard
 - Team collaboration features
-- See [PHASE2_RESUMPTION_GUIDE.md](./PHASE2_RESUMPTION_GUIDE.md)
 
 ---
 
