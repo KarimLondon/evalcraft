@@ -394,12 +394,6 @@ MIT License - see [LICENSE](LICENSE) file
 
 **Karim Ezzouek**
 
-Building AI products and tooling for PMs.
-
-- Portfolio: [your-portfolio-link]
-- LinkedIn: [your-linkedin]
-- Twitter: [@your-handle]
-
 ---
 
 ## ⭐ Support
